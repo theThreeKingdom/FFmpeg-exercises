@@ -65,6 +65,18 @@ $ ffmpeg -codecs
 $ ffmpeg -encoders
 ```
 
+## 1.4 复用和解复用（mux）
+
+> 把不同的流按照某种容器的规则放入容器，这种行为叫做复用（mux）
+>
+> 把不同的流从某种容器中解析出来，这种行为叫做解复用(demux)
+
+## 1.5帧率和码率
+
+> 帧率也叫帧频率，帧率是视频文件中每一秒的帧数，肉眼想看到连续移动图像至少需要15帧。
+>
+> 比特率(也叫码率，数据率)是一个确定整体视频/音频质量的参数，秒为单位处理的位数，码率和视频质量成正比，在视频文件中中比特率用bps来表达。
+
 # 二、FFmpeg常用命令格式
 
 FFmpeg 的命令行参数非常多，可以分成五个部分。
@@ -105,6 +117,37 @@ FFmpeg 常用的命令行参数如下
 > * `-vn`： 去除视频流
 > * `-preset`：指定输出的视频质量，会影响文件的生成速度，有以下几个可用的值 ultrafast, superfast, veryfast, faster, fast, medium, slow, slower, veryslow
 > * `-y`：不经过确认，输出时直接覆盖同名文件
+
+## 3.1主要参数
+
+> * -f fmt 强制参数fmt格式
+> * -i 输入文件
+> * -y 覆盖输出文件
+> * -t 时长
+> * -ss 开始时间
+> * -g 关键帧间隔控制（视频跳转需要关键帧）
+
+## 3.2视频参数
+
+> * -b 设置比特率，缺省200kb/秒
+>
+> * -r 设置帧频，缺省25（用于视频截图）
+>
+> * -s 设置帧大小，格式为WXH，缺省160x128
+>
+> * -vn 不做视频记录
+>
+> * -vcodec codec 强制使用codec编解码方式
+>
+> * -aspect 设置横纵比 4:3  16:9
+
+## 3.3音频参数
+
+> * -ab 设置音频码率
+> * -ar 设置音频采样率
+> * -ac 设置通道 缺省为1
+> * -an 去年音频
+> * -acodec codec 使用codec编解码
 
 # 四、常用命令
 
@@ -209,7 +252,7 @@ $ ffmpeg \
 output.jpg
 ```
 
-## 裁剪
+## 4.9裁剪
 
 > 裁剪（cutting）指的是，截取原始视频里面的一个片段，输出为一个新视频。可以指定开始时间（start）和持续时间（duration），也可以指定结束时间（end）。如下：`-c copy`表示不改变音频和视频的编码格式，直接拷贝，这样会快很多。
 
@@ -223,7 +266,7 @@ $ ffmpeg -ss 00:01:50 -i [input] -t 10.5 -c copy [output]
 $ ffmpeg -ss 2.5 -i [input] -to 10 -c copy [output]
 ```
 
-## 为音频添加封面
+## 4.10为音频添加封面
 
 > 有些视频网站只允许上传视频文件。如果要上传音频文件，必须为音频添加封面，将其转为视频，然后上传。下面命令可以将音频文件，转为带封面的视频文件。如：下面命令中，有两个输入文件，一个是封面图片`cover.jpg`，另一个是音频文件`input.mp3`。`-loop 1`参数表示图片无限循环，`-shortest`参数表示音频文件结束，输出视频就结束。
 
@@ -234,4 +277,73 @@ $ ffmpeg \
 -c:v libx264 -c:a aac -b:a 192k -shortest \
 output.mp4
 ```
+
+## 4.11压缩视频大小
+
+> * -threads 4 开启多线程
+> * -i input.mp4 表示输入要转换的文件
+> * -vcodec libx264 设定视频的编码器
+> * -preset fast 指定编码的配置。
+> * -crf 28：重要选项，指定输出视频的质量，取值范围0-51，默认值23，数字越小输出视频的质量越高。
+> * scale=1280:720 设置视频显示的尺寸
+> * -acodec libmp3lame 设置音频编码为MP3
+> * -ab 128k 设置音频流量，值越小，压缩率越高，质量越差。
+
+```po
+ffmpeg  -threads 4 \
+-i input.mp4 \
+-vcodec libx264 \
+-preset fast \
+-crf 28 \
+-y -vf scale=1280:720 \
+-acodec libmp3lame \
+-ab 128k output.mp4
+```
+
+## 4.12录屏
+
+> 在Windows下，可以用FastStone Capture等来实现录屏，Linux下也可以用vokoscreenNG，但实际上，FFmpeg在命令行下就可以做到，不需要GUI。
+>
+> 常用参数如下：
+>
+> * -framerate 25：表示我录制的帧率为25
+> * -video_size：需要录制的宽度和高度
+> * x11grab:表明我们是通过x11抓屏的方式 ，这是Linux下的命令，如果是Win，则使用gdigrab
+
+```pow
+ffmpeg -video_size 1024x768 \
+-framerate 25 -f x11grab -i :0.0+100,200 output.mp4
+```
+
+## 4.13从视频截选指定长度的内容生成GIF图片
+
+> 常用参数如下：
+>
+> -ss：开始时间
+>
+> -t：持续时长
+
+```pow
+ffmpeg -ss 3 -t 5 -i input.mp4 -s 480*270 -f gif out.gif
+```
+
+## 4.14从视频中抽取音频
+
+```po
+ffmpeg -i input.mp4 -f mp3 -vn qfl.mp3
+```
+
+## 4.15音频格式转换
+
+> 指定比特率即可
+>
+> 常用参数说明：
+>
+> -ab 设置音频码率
+
+```po
+ffmpeg -i input.flac  -ab 256k output.mp3
+```
+
+
 
