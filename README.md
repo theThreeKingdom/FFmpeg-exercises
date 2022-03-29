@@ -331,6 +331,7 @@ ffmpeg -ss 3 -t 5 -i input.mp4 -s 480*270 -f gif out.gif
 
 ```po
 ffmpeg -i input.mp4 -f mp3 -vn qfl.mp3
+
 ```
 
 ## 4.15音频格式转换
